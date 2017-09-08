@@ -49,69 +49,21 @@ function initGL(canvas)
 
 // =====================================================
 function initBuffers() {
-	//----------------------
-	//		BUFFER DISQUE
-	//---------------------
-	vertexBuffer1 = gl.createBuffer();
-	vertexBuffer1.numItems = 0;
+
+	vertexBuffer = gl.createBuffer();
+	vertexBuffer.numItems = 0;
 	
-	gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer1);
-	vertices1 = [0.0,0.0,0.0];
-	vertexBuffer1.numItems += 1;
-	
-	var part = 48.0;
-	var deltaTheta = 2.0*Math.PI/part; 
-	var rCircle = 0.3;
-	var a,b,c,d;
+	gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+	vertices = [];
+
 	
 	
 
-	// boucle cercle
-	for (i = 0; i <= part+1; i++){
-		a = rCircle*Math.cos(i*deltaTheta);
-		b= rCircle*Math.sin(i*deltaTheta) ;
-		vertices1.push(a);
-		vertices1.push(b );
-		vertices1.push(0.0);
-		vertices1. push(0.0,0.0,0.0);
-		vertexBuffer1.numItems+=2;
-	}
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices1), gl.STATIC_DRAW);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 	vertexBuffer1.itemSize = 3;
 	
 
-	//----------------------
-	//	BUFFFER ANNEAU
-	//----------------------
-	vertexBuffer2 = gl.createBuffer();
-	vertexBuffer2.numItems = 0;
 	
-	gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer2);
-	vertices2=[]
-	// Boucle pour la création de l'anneau avec une translation deltaX et deltaY
-	var deltaX = 1.0;
-	var deltaY = -1.0 ;
-	var r1Ring = 0.3;
-	var r2Ring = 0.8;
-	
-	for (i = 0; i <= part+1; i++){
-		a= r1Ring*Math.cos(i*deltaTheta) +deltaX;
-		b= r1Ring*Math.sin(i*deltaTheta ) +deltaY;
-		c = r2Ring*Math.cos(i*deltaTheta) + deltaX;
-		d= r2Ring*Math.sin(i*deltaTheta)+ deltaY;
-		
-		vertices2.push(a );
-		vertices2.push(b );
-		vertices2.push(0.0);
-		vertices2.push(c );
-		vertices2.push(d );
-		vertices2.push(0.0);
-		vertexBuffer2.numItems+=2;
-	}
-	
-	
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices2), gl.STATIC_DRAW);
-	vertexBuffer2.itemSize = 3;
 
 
 
@@ -203,15 +155,11 @@ function drawScene() {
 
 		setMatrixUniforms();
 		
-		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer1);
-		gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute,
-      	vertexBuffer1.itemSize, gl.FLOAT, false, 0, 0);
-		gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexBuffer1.numItems);
 		
 		
-		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer2);
+		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
 		gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute,
-      	vertexBuffer2.itemSize, gl.FLOAT, false, 0, 0);
-		gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexBuffer2.numItems);
+      	vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
+		gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexBuffer.numItems);
 	}
 }
