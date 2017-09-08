@@ -49,25 +49,57 @@ function initGL(canvas)
 
 // =====================================================
 function initBuffers() {
+	var part = 30.0;
 
+    var radius = 1.0;
+	var vertexPositionData = [];
+
+    for (var latNumber = 0; latNumber <= part; latNumber++) {
+      var theta = latNumber * Math.PI / part;
+      var sinTheta = Math.sin(theta);
+      var cosTheta = Math.cos(theta);
+
+      for (var longNumber = 0; longNumber <= part; longNumber++) {
+        var phi = longNumber * 2 * Math.PI / part;
+        var sinPhi = Math.sin(phi);
+        var cosPhi = Math.cos(phi);
+
+        var x = cosPhi * sinTheta;
+        var y = cosTheta;
+        var z = sinPhi * sinTheta;
+
+        vertexPositionData.push(radius * x);
+        vertexPositionData.push(radius * y);
+        vertexPositionData.push(radius * z);
+      }
+    }
 	vertexBuffer = gl.createBuffer();
-	vertexBuffer.numItems = 0;
-	
 	gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-	vertices = [];
-
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertexPositionData), gl.STATIC_DRAW);
+	vertexBuffer.itemSize = 3;
+	vertexBuffer.numItems = vertexPositionData.length / 3;
+			
+	var indexData = [];
 	
+    for (var latNumber = 0; latNumber < part; latNumber++) {
+      for (var longNumber = 0; longNumber < part; longNumber++) {
+        var first = (latNumber * (part + 1)) + longNumber;
+        var second = first + part + 1;
+        indexData.push(first);
+        indexData.push(second);
+        indexData.push(first + 1);
+
+        indexData.push(second);
+        indexData.push(second + 1);
+        indexData.push(first + 1);
+      }
+    }
 	
-
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
-	vertexBuffer1.itemSize = 3;
-	
-
-	
-
-
-
-	
+	indiceBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indiceBuffer);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indexData), gl.STATIC_DRAW);
+	indiceBuffer.itemSize = 1;
+	indiceBuffer.numItems = indexData.length;
 }
 
 
@@ -128,7 +160,6 @@ function initShaders(vShaderTxt,fShaderTxt) {
 	shaderProgram.vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
 	gl.enableVertexAttribArray(shaderProgram.vertexPositionAttribute);
 
-
 	shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
 	shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
 }
@@ -148,18 +179,23 @@ function drawScene() {
 
 	if(shaderProgram != null) {
 		
+		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+		gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute,vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
+		
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indiceBuffer);
 		mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
 		mat4.identity(mvMatrix);
 		mat4.translate(mvMatrix, [0.0, 0.0, -5.0]);
 		mat4.multiply(mvMatrix, objMatrix);
+		setMatrixUniforms();  
+        
+		
 
-		setMatrixUniforms();
+		
+		//gl.drawArrays(gl.TRIANGLES, 0, vertexBuffer.numItems);
+		gl.drawElements(gl.TRIANGLES, indiceBuffer.numItems, gl.UNSIGNED_SHORT, 0);
 		
 		
-		
-		gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
-		gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute,
-      	vertexBuffer.itemSize, gl.FLOAT, false, 0, 0);
-		gl.drawArrays(gl.TRIANGLE_STRIP, 0, vertexBuffer.numItems);
+
 	}
 }
